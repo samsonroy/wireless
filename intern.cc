@@ -21,7 +21,7 @@ public:
 void Setup (Ptr<Socket> socket, Address address, uint32_t packetSize, uint32_t nPackets, DataRate dataRate);
 
 static void GenerateTraffic (Ptr<Socket> socket, uint32_t pktSize, 
-                             uint32_t pktCount, Time pktInterval)
+                             uint32_t pktCount, Time pktInterval);
 
  Ptr<Socket>     m_socket;
  Address         m_peer;
@@ -53,7 +53,6 @@ static void GenerateTraffic (Ptr<Socket> socket, uint32_t pktSize,
       socket->Close ();
     }
 }
-
 
 int main (int argc, char *argv[])
 {
@@ -110,7 +109,7 @@ int main (int argc, char *argv[])
   NetDeviceContainer devices = wifi.Install (wifiPhy, wifiMac, nodes);
 
   InternetStackHelper internet;
-  internet.Install (c);
+  internet.Install (nodes);
 
   Ipv4AddressHelper address;
   NS_LOG_INFO ("Assign IP Addresses.");
@@ -123,6 +122,8 @@ int main (int argc, char *argv[])
   ApplicationContainer sinkApps = packetSinkHelper.Install (nodes.Get (1));
   sinkApps.Start (Seconds (50.0));
   sinkApps.Stop (Seconds (150.0));
+
+  Ptr<Socket> ns3TcpSocket = Socket::CreateSocket (nodes.Get (0), TcpSocketFactory::GetTypeId ());
 
   Ptr<MyApp> app = CreateObject<MyApp> ();
   app->Setup (ns3TcpSocket, sinkAddress, 1040, 1000, DataRate ("1Mbps"));
