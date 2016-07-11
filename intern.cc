@@ -57,7 +57,8 @@ static void GenerateTraffic (Ptr<Socket> socket, uint32_t pktSize,
 int main (int argc, char *argv[])
 {
   std::string phyMode ("DsssRate1Mbps");
-  double rss = -80;  
+  double rss = -80; 
+  uint32_t nPackets = 1040; 
   double interval = 1.0; 
   bool verbose = false;
 
@@ -65,6 +66,7 @@ int main (int argc, char *argv[])
 
   cmd.AddValue ("phyMode", "Wifi Phy mode", phyMode);
   cmd.AddValue ("rss", "received signal strength", rss);
+  cmd.AddValue ("nPackets", "number of packets generated", nPackets);
   cmd.AddValue ("interval", "interval (seconds) between packets", interval);
   cmd.AddValue ("verbose", "turn on all WifiNetDevice log components", verbose);
 
@@ -131,7 +133,8 @@ int main (int argc, char *argv[])
   app->SetStartTime (Seconds (50.0));
   app->SetStopTime (Seconds (150.));
 
- 
+  NS_LOG_UNCOND ("Testing " << nPackets  << " packets sent with receiver rss " << rss );
+
   Simulator::Stop (Seconds(150));
   Simulator::Run ();
   Simulator::Destroy ();
