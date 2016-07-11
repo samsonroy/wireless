@@ -15,15 +15,38 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE ("WifiSimpleAdhoc");
 
+class MyApp : public Application 
+{
+public:
+void Setup (Ptr<Socket> socket, Address address, uint32_t packetSize, uint32_t nPackets, DataRate dataRate);
 
-static void GenerateTraffic (Ptr<Socket> socket,Address address, uint32_t pktSize, 
-                             uint32_t pktCount,DataRate dataRate, Time pktInterval)
+static void GenerateTraffic (Ptr<Socket> socket, uint32_t pktSize, 
+                             uint32_t pktCount, Time pktInterval)
+
+ Ptr<Socket>     m_socket;
+ Address         m_peer;
+ uint32_t        m_packetSize;
+ uint32_t        m_nPackets;
+ DataRate        m_dataRate;
+
+};
+void MyApp::Setup (Ptr<Socket> socket, Address address, uint32_t packetSize, uint32_t nPackets, DataRate dataRate)
+{
+  m_socket = socket;
+  m_peer = address;
+  m_packetSize = packetSize;
+  m_nPackets = nPackets;
+  m_dataRate = dataRate;
+}
+
+static void GenerateTraffic (Ptr<Socket> socket, uint32_t pktSize, 
+                             uint32_t pktCount, Time pktInterval)
 {
   if (pktCount > 0)
     {
       socket->Send (Create<Packet> (pktSize));
-      Simulator::Schedule (pktInterval, &GenerateTraffic, address,
-                           socket, pktSize,pktCount-1,dataRate, pktInterval);
+      Simulator::Schedule (pktInterval, &GenerateTraffic,
+                           socket, pktSize,pktCount-1, pktInterval);
     }
   else
     {
@@ -36,8 +59,6 @@ int main (int argc, char *argv[])
 {
   std::string phyMode ("DsssRate1Mbps");
   double rss = -80;  
-  uint32_t packetSize = 1000; 
-  uint32_t numPackets = 1;
   double interval = 1.0; 
   bool verbose = false;
 
@@ -45,8 +66,6 @@ int main (int argc, char *argv[])
 
   cmd.AddValue ("phyMode", "Wifi Phy mode", phyMode);
   cmd.AddValue ("rss", "received signal strength", rss);
-  cmd.AddValue ("packetSize", "size of application packet sent", packetSize);
-  cmd.AddValue ("numPackets", "number of packets generated", numPackets);
   cmd.AddValue ("interval", "interval (seconds) between packets", interval);
   cmd.AddValue ("verbose", "turn on all WifiNetDevice log components", verbose);
 
@@ -93,10 +112,10 @@ int main (int argc, char *argv[])
   InternetStackHelper internet;
   internet.Install (c);
 
-  Ipv4AddressHelper ipv4;
+  Ipv4AddressHelper address;
   NS_LOG_INFO ("Assign IP Addresses.");
-  ipv4.SetBase ("10.1.1.0", "255.255.255.0");
-  Ipv4InterfaceContainer i = ipv4.Assign (devices);
+  address.SetBase ("10.1.1.0", "255.255.255.0");
+  Ipv4InterfaceContainer interfaces = address.Assign (devices);
 
    uint16_t sinkPort = 8080;
   Address sinkAddress (InetSocketAddress (interfaces.GetAddress (1), sinkPort));
@@ -105,7 +124,7 @@ int main (int argc, char *argv[])
   sinkApps.Start (Seconds (50.0));
   sinkApps.Stop (Seconds (150.0));
 
-  Ptr<GenerateTraffic> app = CreateObject<GenerateTraffic> ();
+  Ptr<MyApp> app = CreateObject<MyApp> ();
   app->Setup (ns3TcpSocket, sinkAddress, 1040, 1000, DataRate ("1Mbps"));
   nodes.Get (0)->AddApplication (app);
   app->SetStartTime (Seconds (50.0));
