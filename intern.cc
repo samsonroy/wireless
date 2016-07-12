@@ -4,6 +4,8 @@
 #include "ns3/config-store-module.h"
 #include "ns3/wifi-module.h"
 #include "ns3/internet-module.h"
+#include "ns3/mobility-module.h"
+#include "ns3/netanim-module.h"
 #include "ns3/applications-module.h"
 
 #include <iostream>
@@ -112,6 +114,20 @@ int main (int argc, char *argv[])
   InternetStackHelper internet;
   internet.Install (nodes);
 
+  MobilityHelper mobility;
+  mobility.SetPositionAllocator ("ns3::GridPositionAllocator",
+                                  "MinX", DoubleValue (10.0),
+                                    "MinY", DoubleValue (10.0),
+                                   "DeltaX", DoubleValue (5.0),
+                                   "DeltaY", DoubleValue (2.0),
+                                    "GridWidth", UintegerValue (5),
+                                  "LayoutType", StringValue ("RowFirst"));
+   mobility.SetMobilityModel ("ns3::RandomWalk2dMobilityModel",
+                                "Bounds", RectangleValue (Rectangle (-50, 50, -25, 50)));
+   mobility.Install (nodes);
+   mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
+   AnimationInterface::SetConstantPosition (nodes.Get (1), 10, 30); 
+
   Ipv4AddressHelper address;
   NS_LOG_INFO ("Assign IP Addresses.");
   address.SetBase ("10.1.1.0", "255.255.255.0");
@@ -133,6 +149,8 @@ int main (int argc, char *argv[])
   app->SetStopTime (Seconds (150.));
 
   NS_LOG_UNCOND ("Testing " << nPackets  << " packets sent with receiver rss " << rss );
+
+  AnimationInterface anim ("wireless-animation.xml"); 
 
   Simulator::Stop (Seconds(150));
   Simulator::Run ();
