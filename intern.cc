@@ -20,8 +20,7 @@ class MyApp : public Application
 public:
 void Setup (Ptr<Socket> socket, Address address, uint32_t packetSize, uint32_t nPackets, DataRate dataRate);
 
-static void GenerateTraffic (Ptr<Socket> socket, uint32_t pktSize, 
-                             uint32_t pktCount, Time pktInterval);
+static void GenerateTraffic (void);
 
  Ptr<Socket>     m_socket;
  Address         m_peer;
