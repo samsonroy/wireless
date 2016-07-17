@@ -4,7 +4,6 @@
 #include "ns3/config-store-module.h"
 #include "ns3/wifi-module.h"
 #include "ns3/internet-module.h"
-#include "ns3/mobility-module.h"
 #include "ns3/netanim-module.h"
 #include "ns3/applications-module.h"
 
@@ -115,18 +114,17 @@ int main (int argc, char *argv[])
   internet.Install (nodes);
 
   MobilityHelper mobility;
-  mobility.SetPositionAllocator ("ns3::GridPositionAllocator",
-                                  "MinX", DoubleValue (10.0),
-                                    "MinY", DoubleValue (10.0),
-                                   "DeltaX", DoubleValue (5.0),
-                                   "DeltaY", DoubleValue (2.0),
-                                    "GridWidth", UintegerValue (5),
-                                  "LayoutType", StringValue ("RowFirst"));
-   mobility.SetMobilityModel ("ns3::RandomWalk2dMobilityModel",
-                                "Bounds", RectangleValue (Rectangle (-50, 50, -25, 50)));
-   mobility.Install (nodes);
-   mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
-   AnimationInterface::SetConstantPosition (nodes.Get (1), 10, 30); 
+  mobility.SetPositionAllocator ("ns3::RandomDiscPositionAllocator",
+                                 "X", StringValue ("100.0"),
+                                 "Y", StringValue ("100.0"),
+                                 "Rho", StringValue ("ns3::UniformRandomVariable[Min=0|Max=30]"));
+  mobility.SetMobilityModel ("ns3::RandomWalk2dMobilityModel",
+                             "Mode", StringValue ("Time"),
+                             "Time", StringValue ("2s"),
+                             "Speed", StringValue ("ns3::ConstantRandomVariable[Constant=1.0]"),
+                             "Bounds", StringValue ("0|200|0|200"));
+  mobility.Install(nodes);
+
 
   Ipv4AddressHelper address;
   NS_LOG_INFO ("Assign IP Addresses.");
